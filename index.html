@@ -148,14 +148,11 @@
     <div class="login-card">
       <div class="logo">🔐</div>
       <h1>Trackings USA</h1>
-      <p class="sub">Ingreso con KeyAuth 1.3. Solo necesitas el <b>Application Name</b>, <b>Owner ID</b> y tu clave/licencia.</p>
+      <p class="sub">Ingreso con KeyAuth 1.3. El <b>Application Name</b> y el <b>Owner ID</b> ya van configurados dentro del HTML, no se piden en pantalla.</p>
       <div class="fields">
-        <div class="field full"><label>Application Name</label><input id="kaName" autocomplete="off" placeholder="Ejemplo: trackingsusa"></div>
-        <div class="field full"><label>Owner ID</label><input id="kaOwner" autocomplete="off" placeholder="Owner ID de KeyAuth"></div>
         <div class="field full"><label>Clave / License Key</label><input id="kaKey" autocomplete="off" placeholder="Pega tu key aquí"></div>
-        <div class="field full"><label>Versión app</label><input id="kaVersion" value="1.0" autocomplete="off"></div>
         <div class="field full">
-          <label class="trustbox"><input id="trustedDeviceLogin" type="checkbox"> <span><b>Dispositivo de confianza</b><br>Guardar KeyAuth y token de GitHub en este navegador. Si no lo marcas, el token no se guarda.</span></label>
+          <label class="trustbox"><input id="trustedDeviceLogin" type="checkbox"> <span><b>Dispositivo de confianza</b><br>Guardar la key validada y token de GitHub en este navegador. Si no lo marcas, no se guarda la key ni el token.</span></label>
         </div>
         <div class="field full"><button class="btn" id="loginBtn">Entrar y validar KeyAuth</button></div>
       </div>
@@ -261,7 +258,7 @@
       <div class="modal-head"><h2>Configuración</h2><button class="xbtn" data-close-modal>✕</button></div>
       <div class="fields">
         <div class="field"><label>GitHub Owner</label><input id="ghOwner" placeholder="CatalogosHN"></div>
-        <div class="field"><label>Repositorio</label><input id="ghRepo" placeholder="SeguimientoTrackings"></div>
+        <div class="field"><label>Repositorio</label><input id="ghRepo" placeholder="xsgmtsi"></div>
         <div class="field"><label>Branch</label><input id="ghBranch" placeholder="main"></div>
         <div class="field"><label>Ruta JSON</label><input id="ghPath" placeholder="data/TRACKINGS_COMPRAS.json"></div>
         <div class="field full"><label>Token GitHub</label><input id="ghToken" type="password" placeholder="Fine-grained PAT con Contents Read/Write"></div>
@@ -289,6 +286,17 @@
 (() => {
   'use strict';
 
+  /*
+    CONFIGURACIÓN KEYAUTH INTERNA
+    Cambia estos 3 valores directamente en este HTML.
+    Ya NO se piden en la pantalla de login.
+  */
+  const KEYAUTH_CONFIG = {
+    appName: 'trackints',      // <-- Application Name de KeyAuth
+    ownerId: 'RZsbvRZczd', // <-- Owner ID de KeyAuth
+    version: '1.0'
+  };
+
   const STORE_KEY = 'trackings_usa_tool_v2_state';
   const TRUST_KEY = 'trackings_usa_tool_v2_trusted';
   const TOKEN_KEY = 'trackings_usa_tool_v2_token';
@@ -304,7 +312,7 @@
     updatedAt: new Date().toISOString(),
     settings: {
       trustedDevice: false,
-      github: { owner: 'CatalogosHN', repo: 'SeguimientoTrackings', branch: 'main', path: 'data/TRACKINGS_COMPRAS.json' },
+      github: { owner: 'CatalogosHN', repo: 'xsgmtsi', branch: 'main', path: 'data/TRACKINGS_COMPRAS.json' },
       sites: ['Amazon','eBay','Temu','AliExpress','SHEIN','Personalizado'],
       payments: ['PayPal','Tarjeta terminación 5814','Tarjeta terminación 8154','Google Pay','Apple Pay','Personalizado']
     },
@@ -388,10 +396,7 @@
 
   function initLogin(){
     const saved = getTrusted() ? JSON.parse(localStorage.getItem(KEYAUTH_KEY) || '{}') : {};
-    $('kaName').value = saved.name || '';
-    $('kaOwner').value = saved.ownerid || '';
     $('kaKey').value = saved.key || '';
-    $('kaVersion').value = saved.ver || '1.0';
     $('trustedDeviceLogin').checked = getTrusted();
     $('trustedDeviceLogin').addEventListener('change', e => setTrusted(e.target.checked));
     $('loginBtn').addEventListener('click', loginKeyAuth);
@@ -413,12 +418,14 @@
   }
 
   async function loginKeyAuth(){
-    const name = $('kaName').value.trim();
-    const ownerid = $('kaOwner').value.trim();
+    const name = String(KEYAUTH_CONFIG.appName || '').trim();
+    const ownerid = String(KEYAUTH_CONFIG.ownerId || '').trim();
+    const ver = String(KEYAUTH_CONFIG.version || '1.0').trim() || '1.0';
     const key = $('kaKey').value.trim();
-    const ver = $('kaVersion').value.trim() || '1.0';
     const trust = $('trustedDeviceLogin').checked;
-    if(!name || !ownerid || !key) return toast('Falta Application Name, Owner ID o KeyAuth key.', 'warn');
+    if(!name || name === 'trackints') return toast('Falta configurar KEYAUTH_CONFIG.appName dentro del HTML.', 'warn');
+    if(!ownerid || ownerid === 'RZsbvRZczd') return toast('Falta configurar KEYAUTH_CONFIG.ownerId dentro del HTML.', 'warn');
+    if(!key) return toast('Falta pegar la KeyAuth key.', 'warn');
     $('loginBtn').disabled = true;
     $('loginBtn').textContent = 'Validando...';
     try{
@@ -429,7 +436,7 @@
       if(!lic.success) throw new Error(lic.message || 'Key inválida.');
       if(trust){
         localStorage.setItem(TRUST_KEY,'1');
-        localStorage.setItem(KEYAUTH_KEY, JSON.stringify({ name, ownerid, key, ver }));
+        localStorage.setItem(KEYAUTH_KEY, JSON.stringify({ key }));
       } else {
         localStorage.removeItem(TRUST_KEY);
         localStorage.removeItem(KEYAUTH_KEY);
