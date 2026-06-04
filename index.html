@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Trackings USA · Compras y Seguimiento</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <style>
+    :root{
+      --bg:#07111f;
+      --panel:#0d1b2e;
+      --panel2:#101f34;
+      --card:#13243b;
+      --text:#edf5ff;
+      --muted:#9fb1ca;
+      --line:rgba(255,255,255,.11);
+      --blue:#178bff;
+      --cyan:#18d5ff;
+      --green:#26d07c;
+      --yellow:#ffd166;
+      --red:#ff5b6e;
+      --purple:#9b5cff;
+      --shadow:0 20px 70px rgba(0,0,0,.35);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 15% 5%,rgba(24,139,255,.28),transparent 34%),
+        radial-gradient(circle at 90% 10%,rgba(155,92,255,.18),transparent 30%),
+        linear-gradient(135deg,#050914,#0a1526 45%,#06111e);
+      min-height:100%;
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit}
+    .hidden{display:none!important}
+    .wrap{width:min(1240px,calc(100% - 24px));margin:0 auto;padding:18px 0 90px}
+    .topbar{
+      position:sticky;top:0;z-index:20;
+      padding:14px 0 12px;
+      backdrop-filter:blur(18px);
+      background:linear-gradient(180deg,rgba(7,17,31,.95),rgba(7,17,31,.68));
+      border-bottom:1px solid rgba(255,255,255,.08)
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{
+      width:44px;height:44px;border-radius:16px;
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      display:grid;place-items:center;font-size:24px;box-shadow:0 14px 34px rgba(24,139,255,.32)
+    }
+    .brand h1{font-size:18px;margin:0;line-height:1.1;letter-spacing:.2px}
+    .brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+    .toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .pill{
+      display:inline-flex;align-items:center;gap:7px;
+      border:1px solid var(--line);border-radius:999px;
+      padding:7px 11px;background:rgba(255,255,255,.06);color:var(--muted);font-size:12px
+    }
+    .btn{
+      border:0;border-radius:14px;padding:11px 14px;
+      background:linear-gradient(135deg,var(--blue),#0869d9);
+      color:white;font-weight:800;box-shadow:0 10px 24px rgba(24,139,255,.22)
+    }
+    .btn:hover{filter:brightness(1.08)}
+    .btn:disabled{opacity:.55;cursor:not-allowed;filter:none}
+    .btn.secondary{background:rgba(255,255,255,.08);border:1px solid var(--line);box-shadow:none;color:var(--text)}
+    .btn.success{background:linear-gradient(135deg,#18b86b,#13965a)}
+    .btn.warn{background:linear-gradient(135deg,#ffc44d,#f08b16);color:#211300}
+    .btn.danger{background:linear-gradient(135deg,#ff6477,#d92646)}
+    .btn.purple{background:linear-gradient(135deg,var(--purple),#6734d8)}
+    .btn.small{padding:8px 10px;border-radius:12px;font-size:12px}
+    .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:16px}
+    .panel,.card{
+      background:linear-gradient(180deg,rgba(19,36,59,.96),rgba(12,25,43,.96));
+      border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)
+    }
+    .panel{padding:16px}
+    .panel h2,.card h3{margin:0 0 12px;font-size:17px}
+    .sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.45}
+    .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .field.full{grid-column:1/-1}
+    label{font-size:12px;color:#c8d6e9;font-weight:750}
+    input,select,textarea{
+      width:100%;border:1px solid rgba(255,255,255,.12);border-radius:14px;
+      background:rgba(255,255,255,.07);color:var(--text);outline:none;padding:12px;
+    }
+    select option{background:#101f34;color:#fff}
+    textarea{min-height:92px;resize:vertical}
+    input:focus,select:focus,textarea:focus{border-color:rgba(24,139,255,.75);box-shadow:0 0 0 3px rgba(24,139,255,.15)}
+    .inline{display:flex;gap:8px;align-items:center}
+    .inline>*{min-width:0}
+    .minirow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .login-screen{
+      min-height:100vh;display:grid;place-items:center;padding:20px;
+      background:
+        radial-gradient(circle at 50% 0,rgba(24,139,255,.28),transparent 35%),
+        linear-gradient(135deg,#050914,#0a1526 48%,#07111f)
+    }
+    .login-card{width:min(520px,100%);padding:22px;border-radius:28px;background:rgba(13,27,46,.92);border:1px solid var(--line);box-shadow:var(--shadow)}
+    .login-card h1{margin:0;font-size:26px}
+    .login-card .logo{width:58px;height:58px;font-size:32px;border-radius:20px;margin-bottom:12px}
+    .trustbox{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:16px;padding:12px;color:var(--muted);font-size:13px;line-height:1.35}
+    .trustbox input{width:auto;margin-top:2px}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+    .stat{padding:13px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+    .stat b{display:block;font-size:22px;margin-bottom:2px}.stat span{font-size:12px;color:var(--muted)}
+    .list{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+    .card{padding:14px;position:relative;overflow:hidden}
+    .card:before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--purple));opacity:.75}
+    .card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-top:4px}
+    .titlebox{min-width:0}.titlebox h3{margin:0 0 7px;font-size:16px;word-break:break-word}.titlebox .meta{font-size:12px;color:var(--muted);line-height:1.45}
+    .badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--line);padding:5px 8px;font-size:12px;color:#dce9fa}
+    .badge.green{background:rgba(38,208,124,.12);border-color:rgba(38,208,124,.25);color:#adffd4}
+    .badge.yellow{background:rgba(255,209,102,.12);border-color:rgba(255,209,102,.25);color:#ffe3a1}
+    .badge.blue{background:rgba(24,139,255,.13);border-color:rgba(24,139,255,.28);color:#b9ddff}
+    .section{margin-top:13px;padding-top:12px;border-top:1px dashed rgba(255,255,255,.14)}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:13px;font-weight:900;color:#dceaff}
+    .items{display:flex;flex-direction:column;gap:8px}.item-row{display:grid;grid-template-columns:1fr 88px auto;gap:8px;align-items:center}.track-row{display:grid;grid-template-columns:1fr 124px auto;gap:8px;align-items:center}
+    .empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed rgba(255,255,255,.2);border-radius:20px;background:rgba(255,255,255,.04);margin-top:14px}
+    .toolbar{display:grid;grid-template-columns:1fr auto auto;gap:9px;margin-top:14px;align-items:center}
+    .toast{
+      position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:100;
+      width:min(620px,calc(100% - 24px));padding:12px 14px;border-radius:16px;
+      background:rgba(10,22,38,.96);border:1px solid var(--line);box-shadow:var(--shadow);
+      display:none;color:#fff;font-weight:750
+    }
+    .toast.show{display:block}.toast.ok{border-color:rgba(38,208,124,.45)}.toast.err{border-color:rgba(255,91,110,.55)}.toast.warn{border-color:rgba(255,209,102,.55)}
+    .modal{position:fixed;inset:0;z-index:60;display:none;place-items:center;background:rgba(0,0,0,.62);padding:18px}.modal.show{display:grid}.modal-card{width:min(760px,100%);max-height:90vh;overflow:auto;background:#0d1b2e;border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:var(--shadow)}
+    .modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.modal-head h2{margin:0;font-size:18px}.xbtn{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:12px;color:#fff;padding:8px 10px}
+    .ocrbox{white-space:pre-wrap;background:#07111f;border:1px solid var(--line);padding:12px;border-radius:16px;color:#cfe3ff;max-height:260px;overflow:auto;font-size:12px;line-height:1.45}
+    .bottom-sync{position:sticky;bottom:0;z-index:25;background:linear-gradient(180deg,rgba(7,17,31,0),rgba(7,17,31,.96) 18%,rgba(7,17,31,.98));padding:24px 0 12px;margin-top:18px}.sync-card{display:flex;gap:9px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:rgba(13,27,46,.92);border:1px solid var(--line);border-radius:20px;padding:10px;box-shadow:var(--shadow)}
+    .progress{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .2s}
+    .muted{color:var(--muted)}.danger-text{color:#ff9aa7}.nowrap{white-space:nowrap}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr}.toprow{align-items:flex-start}.top-actions{justify-content:flex-start}.fields{grid-template-columns:1fr}.item-row,.track-row{grid-template-columns:1fr}.item-row .btn,.track-row .btn{width:100%}}
+    @media(max-width:520px){.wrap{width:min(100% - 14px,1240px);padding-top:8px}.panel,.card{border-radius:18px}.login-card{padding:16px}.stats{grid-template-columns:1fr 1fr}.brand h1{font-size:16px}.btn{width:100%}.top-actions{width:100%}.sync-card .btn{width:100%}.inline{flex-direction:column;align-items:stretch}}
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="logo">🔐</div>
+      <h1>Trackings USA</h1>
+      <p class="sub">Ingreso con KeyAuth 1.3. Solo necesitas el <b>Application Name</b>, <b>Owner ID</b> y tu clave/licencia.</p>
+      <div class="fields">
+        <div class="field full"><label>Application Name</label><input id="kaName" autocomplete="off" placeholder="Ejemplo: trackingsusa"></div>
+        <div class="field full"><label>Owner ID</label><input id="kaOwner" autocomplete="off" placeholder="Owner ID de KeyAuth"></div>
+        <div class="field full"><label>Clave / License Key</label><input id="kaKey" autocomplete="off" placeholder="Pega tu key aquí"></div>
+        <div class="field full"><label>Versión app</label><input id="kaVersion" value="1.0" autocomplete="off"></div>
+        <div class="field full">
+          <label class="trustbox"><input id="trustedDeviceLogin" type="checkbox"> <span><b>Dispositivo de confianza</b><br>Guardar KeyAuth y token de GitHub en este navegador. Si no lo marcas, el token no se guarda.</span></label>
+        </div>
+        <div class="field full"><button class="btn" id="loginBtn">Entrar y validar KeyAuth</button></div>
+      </div>
+      <p class="sub" style="margin-top:14px">Los pedidos y seguimientos se guardan localmente cada 2 segundos aunque no tengas internet.</p>
+    </div>
+  </section>
+
+  <main id="app" class="hidden">
+    <div class="topbar">
+      <div class="wrap" style="padding:0">
+        <div class="toprow">
+          <div class="brand">
+            <div class="logo">📦</div>
+            <div><h1>Trackings USA · Compras y Seguimiento</h1><p>Amazon · eBay · Temu · AliExpress · SHEIN · personalizados</p></div>
+          </div>
+          <div class="top-actions">
+            <span class="pill" id="saveStatus">💾 Guardado local activo</span>
+            <button class="btn secondary small" id="settingsBtn">⚙️ Configuración</button>
+            <button class="btn secondary small" id="logoutBtn">Salir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <section class="stats">
+        <div class="stat"><b id="statOrders">0</b><span>compras</span></div>
+        <div class="stat"><b id="statTracks">0</b><span>trackings</span></div>
+        <div class="stat"><b id="statProducts">0</b><span>productos</span></div>
+        <div class="stat"><b id="statPending">0</b><span>sin tracking</span></div>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <h2 id="formTitle">Agregar compra</h2>
+          <p class="sub">Puedes escribir todo manualmente o subir capturas para extraer tracking, número de pedido, producto y cantidad.</p>
+          <input id="editingId" type="hidden">
+          <div class="fields">
+            <div class="field"><label>Sitio de compra</label><select id="siteSelect"></select></div>
+            <div class="field hidden" id="customSiteBox"><label>Sitio personalizado</label><input id="customSite" placeholder="Ejemplo: Walmart, Target..."></div>
+            <div class="field"><label>Método de pago</label><select id="paymentSelect"></select></div>
+            <div class="field hidden" id="customPaymentBox"><label>Pago personalizado</label><input id="customPayment" placeholder="Escribe cuál"></div>
+            <div class="field"><label>Fecha de compra</label><input id="purchaseDate" type="date"></div>
+            <div class="field"><label>Estado</label><select id="orderStatus"><option>Comprado</option><option>Enviado</option><option>En tránsito</option><option>Recibido USA</option><option>En casillero</option><option>En Honduras</option><option>Entregado</option><option>Problema/Reclamo</option></select></div>
+            <div class="field full"><label>Número de pedido</label><div class="inline"><input id="orderNumber" placeholder="Escribir o extraer desde imagen"><button class="btn purple small" data-ocr-target="order">📷 Subir pedido</button></div></div>
+            <div class="field full"><label>Notas</label><textarea id="orderNotes" placeholder="Comentarios, reclamos, casillero, fecha estimada, etc."></textarea></div>
+          </div>
+
+          <div class="section">
+            <div class="section-title"><span>Productos</span><button class="btn secondary small" id="addProductBtn">+ Producto</button></div>
+            <div class="items" id="productRows"></div>
+            <div class="minirow" style="margin-top:9px"><button class="btn purple small" data-ocr-target="product">📷 Subir producto/cantidad</button><span class="muted" style="font-size:12px">Extrae nombre y cantidad tipo “x5”, “Qty 5”, “5 unidades”.</span></div>
+          </div>
+
+          <div class="section">
+            <div class="section-title"><span>Trackings / Seguimientos</span><button class="btn secondary small" id="addTrackingBtn">+ Tracking</button></div>
+            <div class="items" id="trackingRows"></div>
+            <div class="minirow" style="margin-top:9px"><button class="btn purple small" data-ocr-target="tracking">📷 Subir tracking</button><span class="muted" style="font-size:12px">Si detecta varios códigos, los agrega seguidos.</span></div>
+          </div>
+
+          <div class="minirow" style="margin-top:14px">
+            <button class="btn success" id="saveOrderBtn">Guardar compra</button>
+            <button class="btn secondary" id="clearFormBtn">Limpiar formulario</button>
+            <button class="btn secondary" id="copySummaryBtn">Copiar resumen</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Buscar y filtrar</h2>
+          <p class="sub">Filtra por pedido, tracking, producto, sitio, pago o estado.</p>
+          <div class="toolbar">
+            <input id="searchInput" placeholder="Buscar tracking, pedido, producto...">
+            <select id="filterSite"><option value="">Todos los sitios</option></select>
+            <select id="filterStatus"><option value="">Todos los estados</option><option>Comprado</option><option>Enviado</option><option>En tránsito</option><option>Recibido USA</option><option>En casillero</option><option>En Honduras</option><option>Entregado</option><option>Problema/Reclamo</option></select>
+          </div>
+          <div class="minirow" style="margin-top:10px">
+            <button class="btn secondary small" id="exportBtn">Exportar JSON</button>
+            <button class="btn secondary small" id="importBtn">Importar JSON</button>
+            <input id="importFile" class="hidden" type="file" accept="application/json,.json">
+            <button class="btn danger small" id="deleteAllBtn">Borrar todo local</button>
+          </div>
+          <div id="ordersList" class="list"></div>
+        </div>
+      </section>
+
+      <div class="bottom-sync">
+        <div class="sync-card">
+          <div>
+            <b>Sincronización nube GitHub</b><br>
+            <span class="muted" id="cloudMeta">Configura owner/repo/path/token. Los botones están abajo para no estorbar.</span>
+          </div>
+          <div class="minirow">
+            <button class="btn secondary" id="loadCloudBtn">☁️ Cargar nube</button>
+            <button class="btn success" id="pushCloudBtn">⬆️ Subir cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2>Configuración</h2><button class="xbtn" data-close-modal>✕</button></div>
+      <div class="fields">
+        <div class="field"><label>GitHub Owner</label><input id="ghOwner" placeholder="CatalogosHN"></div>
+        <div class="field"><label>Repositorio</label><input id="ghRepo" placeholder="SeguimientoTrackings"></div>
+        <div class="field"><label>Branch</label><input id="ghBranch" placeholder="main"></div>
+        <div class="field"><label>Ruta JSON</label><input id="ghPath" placeholder="data/TRACKINGS_COMPRAS.json"></div>
+        <div class="field full"><label>Token GitHub</label><input id="ghToken" type="password" placeholder="Fine-grained PAT con Contents Read/Write"></div>
+        <div class="field full"><label class="trustbox"><input id="trustedDeviceSettings" type="checkbox"> <span><b>Dispositivo de confianza</b><br>Guardar token y configuración sensible en este navegador.</span></label></div>
+        <div class="field full"><button class="btn success" id="saveSettingsBtn">Guardar configuración</button></div>
+      </div>
+      <p class="sub" style="margin-top:12px">Recomendado para GitHub: crear un JSON dedicado, por ejemplo <b>data/TRACKINGS_COMPRAS.json</b>. Si no existe, “Subir cambios” lo crea.</p>
+    </div>
+  </div>
+
+  <div class="modal" id="ocrModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2>OCR / Extracción desde imagen</h2><button class="xbtn" data-close-modal>✕</button></div>
+      <p class="sub" id="ocrHint">Procesando imagen...</p>
+      <div class="progress"><span id="ocrProgress"></span></div>
+      <div class="ocrbox" id="ocrText" style="margin-top:12px">Esperando imagen...</div>
+      <div class="minirow" style="margin-top:12px"><button class="btn success" id="applyOcrBtn">Aplicar texto detectado</button><button class="btn secondary" data-close-modal>Cerrar</button></div>
+    </div>
+  </div>
+
+  <input id="ocrFile" class="hidden" type="file" accept="image/*">
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORE_KEY = 'trackings_usa_tool_v2_state';
+  const TRUST_KEY = 'trackings_usa_tool_v2_trusted';
+  const TOKEN_KEY = 'trackings_usa_tool_v2_token';
+  const KEYAUTH_KEY = 'trackings_usa_tool_v2_keyauth';
+  const CLOUD_SHA_KEY = 'trackings_usa_tool_v2_cloud_sha';
+
+  const $ = (id) => document.getElementById(id);
+  const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+
+  const defaultState = () => ({
+    schema: 2,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    settings: {
+      trustedDevice: false,
+      github: { owner: 'CatalogosHN', repo: 'SeguimientoTrackings', branch: 'main', path: 'data/TRACKINGS_COMPRAS.json' },
+      sites: ['Amazon','eBay','Temu','AliExpress','SHEIN','Personalizado'],
+      payments: ['PayPal','Tarjeta terminación 5814','Tarjeta terminación 8154','Google Pay','Apple Pay','Personalizado']
+    },
+    orders: []
+  });
+
+  let state = loadState();
+  let currentOcrTarget = 'tracking';
+  let currentOcrText = '';
+  let hasUnsavedChanges = false;
+  let lastAutosave = 0;
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      const base = defaultState();
+      return {
+        ...base,
+        ...parsed,
+        settings: { ...base.settings, ...(parsed.settings || {}), github: { ...base.settings.github, ...((parsed.settings||{}).github||{}) } },
+        orders: Array.isArray(parsed.orders) ? parsed.orders : []
+      };
+    }catch(err){
+      console.error(err);
+      return defaultState();
+    }
+  }
+
+  function saveLocal(reason='auto'){
+    state.updatedAt = new Date().toISOString();
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    hasUnsavedChanges = false;
+    lastAutosave = Date.now();
+    $('saveStatus').textContent = reason === 'auto' ? '💾 Guardado local automático' : '💾 Guardado local';
+    $('saveStatus').title = new Date().toLocaleString();
+  }
+
+  function markDirty(){
+    hasUnsavedChanges = true;
+    $('saveStatus').textContent = '✍️ Cambios pendientes...';
+  }
+
+  setInterval(() => {
+    captureFormSoft();
+    if(hasUnsavedChanges || Date.now() - lastAutosave > 30000) saveLocal('auto');
+  }, 2000);
+
+  window.addEventListener('beforeunload', () => {
+    try{ captureFormSoft(); saveLocal('salida'); }catch(e){}
+  });
+
+  function toast(msg,type='ok'){
+    const t = $('toast');
+    t.className = 'toast show ' + type;
+    t.textContent = msg;
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> t.className = 'toast', 3600);
+  }
+
+  function uid(prefix='id'){
+    return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }
+
+  function escapeHtml(str=''){
+    return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+  }
+
+  function today(){ return new Date().toISOString().slice(0,10); }
+
+  function getTrusted(){ return localStorage.getItem(TRUST_KEY) === '1' || !!state.settings.trustedDevice; }
+
+  function setTrusted(val){
+    state.settings.trustedDevice = !!val;
+    if(val) localStorage.setItem(TRUST_KEY,'1'); else { localStorage.removeItem(TRUST_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(KEYAUTH_KEY); }
+    $('trustedDeviceLogin').checked = !!val;
+    $('trustedDeviceSettings').checked = !!val;
+    markDirty();
+  }
+
+  function initLogin(){
+    const saved = getTrusted() ? JSON.parse(localStorage.getItem(KEYAUTH_KEY) || '{}') : {};
+    $('kaName').value = saved.name || '';
+    $('kaOwner').value = saved.ownerid || '';
+    $('kaKey').value = saved.key || '';
+    $('kaVersion').value = saved.ver || '1.0';
+    $('trustedDeviceLogin').checked = getTrusted();
+    $('trustedDeviceLogin').addEventListener('change', e => setTrusted(e.target.checked));
+    $('loginBtn').addEventListener('click', loginKeyAuth);
+  }
+
+  async function keyauthFetch(params){
+    const url = new URL('https://keyauth.win/api/1.3/');
+    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v == null ? '' : String(v)));
+    const res = await fetch(url.toString(), { method:'GET', cache:'no-store' });
+    const txt = await res.text();
+    try{ return JSON.parse(txt); }catch{ throw new Error('Respuesta no JSON de KeyAuth: ' + txt.slice(0,120)); }
+  }
+
+  function getBrowserHwid(){
+    const base = [navigator.userAgent, navigator.language, screen.width+'x'+screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
+    let h = 2166136261;
+    for(let i=0;i<base.length;i++){ h ^= base.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return 'web-' + (h >>> 0).toString(16);
+  }
+
+  async function loginKeyAuth(){
+    const name = $('kaName').value.trim();
+    const ownerid = $('kaOwner').value.trim();
+    const key = $('kaKey').value.trim();
+    const ver = $('kaVersion').value.trim() || '1.0';
+    const trust = $('trustedDeviceLogin').checked;
+    if(!name || !ownerid || !key) return toast('Falta Application Name, Owner ID o KeyAuth key.', 'warn');
+    $('loginBtn').disabled = true;
+    $('loginBtn').textContent = 'Validando...';
+    try{
+      const init = await keyauthFetch({ type:'init', ver, name, ownerid, hash:'undefined', token:'undefined', thash:'undefined' });
+      if(!init.success) throw new Error(init.message || 'No se pudo inicializar KeyAuth.');
+      const sessionid = init.sessionid;
+      const lic = await keyauthFetch({ type:'license', key, sessionid, name, ownerid, hwid:getBrowserHwid(), code:'' });
+      if(!lic.success) throw new Error(lic.message || 'Key inválida.');
+      if(trust){
+        localStorage.setItem(TRUST_KEY,'1');
+        localStorage.setItem(KEYAUTH_KEY, JSON.stringify({ name, ownerid, key, ver }));
+      } else {
+        localStorage.removeItem(TRUST_KEY);
+        localStorage.removeItem(KEYAUTH_KEY);
+      }
+      state.settings.trustedDevice = trust;
+      saveLocal('login');
+      showApp();
+      toast('KeyAuth validado correctamente.', 'ok');
+    }catch(err){
+      console.error(err);
+      toast('Error KeyAuth: ' + err.message, 'err');
+    }finally{
+      $('loginBtn').disabled = false;
+      $('loginBtn').textContent = 'Entrar y validar KeyAuth';
+    }
+  }
+
+  function showApp(){
+    $('loginScreen').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    initApp();
+  }
+
+  function initApp(){
+    hydrateSelects();
+    loadSettingsForm();
+    bindEvents();
+    clearForm(false);
+    renderAll();
+  }
+
+  function hydrateSelects(){
+    const siteOptions = state.settings.sites || defaultState().settings.sites;
+    const paymentOptions = state.settings.payments || defaultState().settings.payments;
+    $('siteSelect').innerHTML = siteOptions.map(x => `<option>${escapeHtml(x)}</option>`).join('');
+    $('paymentSelect').innerHTML = paymentOptions.map(x => `<option>${escapeHtml(x)}</option>`).join('');
+    $('filterSite').innerHTML = '<option value="">Todos los sitios</option>' + siteOptions.filter(x=>x!=='Personalizado').map(x => `<option>${escapeHtml(x)}</option>`).join('') + '<option>Personalizado</option>';
+  }
+
+  function bindEvents(){
+    if(bindEvents.done) return; bindEvents.done = true;
+    $('siteSelect').addEventListener('change', () => { $('customSiteBox').classList.toggle('hidden', $('siteSelect').value !== 'Personalizado'); markDirty(); });
+    $('paymentSelect').addEventListener('change', () => { $('customPaymentBox').classList.toggle('hidden', $('paymentSelect').value !== 'Personalizado'); markDirty(); });
+    $('addProductBtn').addEventListener('click', () => addProductRow('',1));
+    $('addTrackingBtn').addEventListener('click', () => addTrackingRow('','Pendiente'));
+    $('saveOrderBtn').addEventListener('click', saveOrderFromForm);
+    $('clearFormBtn').addEventListener('click', () => clearForm(true));
+    $('copySummaryBtn').addEventListener('click', copyCurrentSummary);
+    $('searchInput').addEventListener('input', renderOrders);
+    $('filterSite').addEventListener('change', renderOrders);
+    $('filterStatus').addEventListener('change', renderOrders);
+    $('settingsBtn').addEventListener('click', () => openModal('settingsModal'));
+    $('saveSettingsBtn').addEventListener('click', saveSettings);
+    $('trustedDeviceSettings').addEventListener('change', e => setTrusted(e.target.checked));
+    $('logoutBtn').addEventListener('click', logout);
+    $('loadCloudBtn').addEventListener('click', loadCloud);
+    $('pushCloudBtn').addEventListener('click', pushCloud);
+    $('exportBtn').addEventListener('click', exportJson);
+    $('importBtn').addEventListener('click', () => $('importFile').click());
+    $('importFile').addEventListener('change', importJson);
+    $('deleteAllBtn').addEventListener('click', deleteAllLocal);
+    $('ocrFile').addEventListener('change', handleOcrFile);
+    $('applyOcrBtn').addEventListener('click', () => applyOcrText(currentOcrTarget, currentOcrText));
+    $$('[data-close-modal]').forEach(btn => btn.addEventListener('click', () => closeModals()));
+    document.addEventListener('click', e => {
+      const ocrBtn = e.target.closest('[data-ocr-target]');
+      if(ocrBtn){ currentOcrTarget = ocrBtn.dataset.ocrTarget; $('ocrFile').value=''; $('ocrFile').click(); }
+      const editBtn = e.target.closest('[data-edit-id]');
+      if(editBtn) editOrder(editBtn.dataset.editId);
+      const delBtn = e.target.closest('[data-delete-id]');
+      if(delBtn) deleteOrder(delBtn.dataset.deleteId);
+      const copyBtn = e.target.closest('[data-copy-id]');
+      if(copyBtn) copyOrderSummary(copyBtn.dataset.copyId);
+    });
+    document.addEventListener('input', e => {
+      if(e.target.matches('input,textarea,select')) markDirty();
+    });
+    document.addEventListener('paste', async e => {
+      const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+      if(item && !$('app').classList.contains('hidden')){
+        currentOcrTarget = 'tracking';
+        const file = item.getAsFile();
+        await processOcrImage(file);
+      }
+    });
+  }
+
+  function loadSettingsForm(){
+    const gh = state.settings.github || defaultState().settings.github;
+    $('ghOwner').value = gh.owner || '';
+    $('ghRepo').value = gh.repo || '';
+    $('ghBranch').value = gh.branch || 'main';
+    $('ghPath').value = gh.path || 'data/TRACKINGS_COMPRAS.json';
+    $('ghToken').value = getTrusted() ? (localStorage.getItem(TOKEN_KEY) || '') : '';
+    $('trustedDeviceSettings').checked = getTrusted();
+    $('trustedDeviceLogin').checked = getTrusted();
+    updateCloudMeta();
+  }
+
+  function saveSettings(){
+    state.settings.github = {
+      owner: $('ghOwner').value.trim(),
+      repo: $('ghRepo').value.trim(),
+      branch: $('ghBranch').value.trim() || 'main',
+      path: $('ghPath').value.trim() || 'data/TRACKINGS_COMPRAS.json'
+    };
+    setTrusted($('trustedDeviceSettings').checked);
+    if(getTrusted() && $('ghToken').value.trim()) localStorage.setItem(TOKEN_KEY, $('ghToken').value.trim());
+    if(!getTrusted()) localStorage.removeItem(TOKEN_KEY);
+    saveLocal('settings');
+    updateCloudMeta();
+    closeModals();
+    toast('Configuración guardada.', 'ok');
+  }
+
+  function updateCloudMeta(){
+    const gh = state.settings.github;
+    $('cloudMeta').textContent = `${gh.owner || 'owner'}/${gh.repo || 'repo'} · ${gh.branch || 'main'} · ${gh.path || 'data/TRACKINGS_COMPRAS.json'}`;
+  }
+
+  function openModal(id){ $(id).classList.add('show'); }
+  function closeModals(){ $$('.modal').forEach(m => m.classList.remove('show')); }
+
+  function addProductRow(name='', qty=1){
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `<input class="prod-name" placeholder="Nombre producto" value="${escapeHtml(name)}"><input class="prod-qty" type="number" min="1" value="${Number(qty)||1}"><button class="btn danger small" type="button">Eliminar</button>`;
+    row.querySelector('button').addEventListener('click', () => { row.remove(); markDirty(); });
+    $('productRows').appendChild(row);
+    markDirty();
+  }
+
+  function addTrackingRow(code='', status='Pendiente'){
+    const row = document.createElement('div');
+    row.className = 'track-row';
+    row.innerHTML = `<input class="track-code mono" placeholder="Tracking / seguimiento" value="${escapeHtml(code)}"><select class="track-status"><option>Pendiente</option><option>Enviado</option><option>En tránsito</option><option>Entregado USA</option><option>Recibido casillero</option><option>Problema</option></select><button class="btn danger small" type="button">Eliminar</button>`;
+    row.querySelector('.track-status').value = status || 'Pendiente';
+    row.querySelector('button').addEventListener('click', () => { row.remove(); markDirty(); });
+    $('trackingRows').appendChild(row);
+    markDirty();
+  }
+
+  function clearForm(showToast=false){
+    $('editingId').value = '';
+    $('formTitle').textContent = 'Agregar compra';
+    $('siteSelect').value = 'Amazon';
+    $('customSite').value = '';
+    $('customSiteBox').classList.add('hidden');
+    $('paymentSelect').value = 'PayPal';
+    $('customPayment').value = '';
+    $('customPaymentBox').classList.add('hidden');
+    $('purchaseDate').value = today();
+    $('orderStatus').value = 'Comprado';
+    $('orderNumber').value = '';
+    $('orderNotes').value = '';
+    $('productRows').innerHTML = '';
+    $('trackingRows').innerHTML = '';
+    addProductRow('',1);
+    addTrackingRow('','Pendiente');
+    hasUnsavedChanges = true;
+    if(showToast) toast('Formulario limpio.', 'ok');
+  }
+
+  function getFormOrder(){
+    const site = $('siteSelect').value === 'Personalizado' ? ($('customSite').value.trim() || 'Personalizado') : $('siteSelect').value;
+    const payment = $('paymentSelect').value === 'Personalizado' ? ($('customPayment').value.trim() || 'Personalizado') : $('paymentSelect').value;
+    const products = $$('#productRows .item-row').map(row => ({
+      name: row.querySelector('.prod-name').value.trim(),
+      qty: Math.max(1, parseInt(row.querySelector('.prod-qty').value || '1', 10))
+    })).filter(p => p.name || p.qty > 1);
+    const trackings = $$('#trackingRows .track-row').map(row => ({
+      code: cleanTracking(row.querySelector('.track-code').value),
+      status: row.querySelector('.track-status').value,
+      addedAt: new Date().toISOString()
+    })).filter(t => t.code);
+    return {
+      id: $('editingId').value || uid('order'),
+      site,
+      payment,
+      purchaseDate: $('purchaseDate').value || today(),
+      status: $('orderStatus').value,
+      orderNumber: $('orderNumber').value.trim(),
+      notes: $('orderNotes').value.trim(),
+      products: products.length ? products : [{ name:'', qty:1 }],
+      trackings,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function saveOrderFromForm(){
+    const order = getFormOrder();
+    if(!order.orderNumber && !order.trackings.length && !order.products.some(p=>p.name)) return toast('Agrega al menos pedido, tracking o producto.', 'warn');
+    const idx = state.orders.findIndex(o => o.id === order.id);
+    if(idx >= 0){
+      order.createdAt = state.orders[idx].createdAt || new Date().toISOString();
+      state.orders[idx] = order;
+    } else {
+      order.createdAt = new Date().toISOString();
+      state.orders.unshift(order);
+    }
+    saveLocal('manual');
+    renderAll();
+    clearForm(false);
+    toast('Compra guardada. También quedó respaldada localmente.', 'ok');
+  }
+
+  function captureFormSoft(){
+    // Respaldo del formulario en proceso sin crear tarjetas incompletas visibles.
+    const draft = {
+      at: new Date().toISOString(),
+      form: {
+        site: $('siteSelect')?.value,
+        customSite: $('customSite')?.value,
+        payment: $('paymentSelect')?.value,
+        customPayment: $('customPayment')?.value,
+        purchaseDate: $('purchaseDate')?.value,
+        status: $('orderStatus')?.value,
+        orderNumber: $('orderNumber')?.value,
+        notes: $('orderNotes')?.value,
+        products: $$('#productRows .item-row').map(row => ({ name: row.querySelector('.prod-name').value, qty: row.querySelector('.prod-qty').value })),
+        trackings: $$('#trackingRows .track-row').map(row => ({ code: row.querySelector('.track-code').value, status: row.querySelector('.track-status').value }))
+      }
+    };
+    localStorage.setItem(STORE_KEY + '_draft', JSON.stringify(draft));
+  }
+
+  function renderAll(){ renderStats(); renderOrders(); }
+
+  function renderStats(){
+    const orders = state.orders || [];
+    const tracks = orders.reduce((n,o)=> n + (o.trackings||[]).length, 0);
+    const products = orders.reduce((n,o)=> n + (o.products||[]).reduce((a,p)=>a+(Number(p.qty)||1),0), 0);
+    const pending = orders.filter(o => !(o.trackings||[]).length).length;
+    $('statOrders').textContent = orders.length;
+    $('statTracks').textContent = tracks;
+    $('statProducts').textContent = products;
+    $('statPending').textContent = pending;
+  }
+
+  function orderText(o){
+    return [o.site,o.payment,o.status,o.orderNumber,o.notes,...(o.products||[]).map(p=>p.name+' '+p.qty),...(o.trackings||[]).map(t=>t.code+' '+t.status)].join(' ').toLowerCase();
+  }
+
+  function renderOrders(){
+    const q = $('searchInput').value.trim().toLowerCase();
+    const fs = $('filterSite').value;
+    const st = $('filterStatus').value;
+    let list = [...state.orders];
+    if(q) list = list.filter(o => orderText(o).includes(q));
+    if(fs) list = list.filter(o => o.site === fs || (fs === 'Personalizado' && !state.settings.sites.includes(o.site)));
+    if(st) list = list.filter(o => o.status === st);
+    if(!list.length){ $('ordersList').innerHTML = '<div class="empty">No hay compras con ese filtro.</div>'; return; }
+    $('ordersList').innerHTML = list.map(o => {
+      const prodHtml = (o.products||[]).map(p => `<span class="badge blue">${escapeHtml(p.qty || 1)} x ${escapeHtml(p.name || 'Producto sin nombre')}</span>`).join('');
+      const trackHtml = (o.trackings||[]).length ? (o.trackings||[]).map(t => `<span class="badge green mono">${escapeHtml(t.code)} · ${escapeHtml(t.status || '')}</span>`).join('') : '<span class="badge yellow">Sin tracking</span>';
+      return `<article class="card">
+        <div class="card-head">
+          <div class="titlebox">
+            <h3>${escapeHtml(o.orderNumber || 'Sin número de pedido')}</h3>
+            <div class="meta">${escapeHtml(o.site)} · ${escapeHtml(o.payment)} · Compra: ${escapeHtml(o.purchaseDate || '')}</div>
+            <div class="badges"><span class="badge">${escapeHtml(o.status || 'Comprado')}</span>${prodHtml}</div>
+          </div>
+          <div class="minirow">
+            <button class="btn secondary small" data-copy-id="${escapeHtml(o.id)}">Copiar</button>
+            <button class="btn secondary small" data-edit-id="${escapeHtml(o.id)}">Editar</button>
+            <button class="btn danger small" data-delete-id="${escapeHtml(o.id)}">Borrar</button>
+          </div>
+        </div>
+        <div class="section"><div class="section-title">Trackings</div><div class="badges">${trackHtml}</div></div>
+        ${o.notes ? `<div class="section"><div class="muted">${escapeHtml(o.notes)}</div></div>` : ''}
+      </article>`;
+    }).join('');
+  }
+
+  function editOrder(id){
+    const o = state.orders.find(x=>x.id===id); if(!o) return;
+    $('editingId').value = o.id;
+    $('formTitle').textContent = 'Editando compra';
+    if(state.settings.sites.includes(o.site)){ $('siteSelect').value = o.site; $('customSiteBox').classList.add('hidden'); } else { $('siteSelect').value='Personalizado'; $('customSite').value=o.site; $('customSiteBox').classList.remove('hidden'); }
+    if(state.settings.payments.includes(o.payment)){ $('paymentSelect').value = o.payment; $('customPaymentBox').classList.add('hidden'); } else { $('paymentSelect').value='Personalizado'; $('customPayment').value=o.payment; $('customPaymentBox').classList.remove('hidden'); }
+    $('purchaseDate').value = o.purchaseDate || today();
+    $('orderStatus').value = o.status || 'Comprado';
+    $('orderNumber').value = o.orderNumber || '';
+    $('orderNotes').value = o.notes || '';
+    $('productRows').innerHTML = ''; (o.products||[]).forEach(p => addProductRow(p.name, p.qty)); if(!$('productRows').children.length) addProductRow('',1);
+    $('trackingRows').innerHTML = ''; (o.trackings||[]).forEach(t => addTrackingRow(t.code, t.status)); if(!$('trackingRows').children.length) addTrackingRow('','Pendiente');
+    window.scrollTo({ top: 0, behavior:'smooth' });
+  }
+
+  function deleteOrder(id){
+    const o = state.orders.find(x=>x.id===id); if(!o) return;
+    if(!confirm('¿Borrar esta compra del dispositivo?')) return;
+    state.orders = state.orders.filter(x=>x.id!==id);
+    saveLocal('delete');
+    renderAll();
+    toast('Compra borrada localmente.', 'ok');
+  }
+
+  function deleteAllLocal(){
+    if(!confirm('¿Seguro que quieres borrar todos los seguimientos guardados en este dispositivo?')) return;
+    state.orders = [];
+    saveLocal('wipe');
+    renderAll();
+    toast('Todo fue borrado localmente.', 'warn');
+  }
+
+  async function handleOcrFile(e){
+    const file = e.target.files?.[0]; if(!file) return;
+    await processOcrImage(file);
+  }
+
+  async function processOcrImage(file){
+    currentOcrText = '';
+    $('ocrText').textContent = 'Preparando imagen...';
+    $('ocrProgress').style.width = '0%';
+    $('ocrHint').textContent = 'Leyendo imagen. Mantén la página abierta hasta terminar.';
+    openModal('ocrModal');
+    try{
+      const prepared = await preprocessImage(file);
+      const result = await Tesseract.recognize(prepared, 'eng+spa', {
+        logger: m => {
+          if(m.status){ $('ocrHint').textContent = m.status; }
+          if(typeof m.progress === 'number') $('ocrProgress').style.width = Math.round(m.progress * 100) + '%';
+        }
+      });
+      currentOcrText = result?.data?.text || '';
+      $('ocrText').textContent = currentOcrText.trim() || 'No se detectó texto claro.';
+      $('ocrHint').textContent = 'Texto detectado. Revisa y aplica.';
+      $('ocrProgress').style.width = '100%';
+      applyOcrText(currentOcrTarget, currentOcrText, true);
+    }catch(err){
+      console.error(err);
+      $('ocrHint').textContent = 'No se pudo leer la imagen.';
+      $('ocrText').textContent = err.message;
+      toast('Error OCR: ' + err.message, 'err');
+    }
+  }
+
+  function preprocessImage(file){
+    return new Promise((resolve,reject)=>{
+      const img = new Image();
+      img.onload = () => {
+        const max = 2200;
+        let w = img.width, h = img.height;
+        const scale = Math.min(max / Math.max(w,h), 2);
+        if(scale < 1){ w = Math.round(w*scale); h = Math.round(h*scale); }
+        const c = document.createElement('canvas'); c.width=w; c.height=h;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        const data = ctx.getImageData(0,0,w,h);
+        for(let i=0;i<data.data.length;i+=4){
+          const r=data.data[i], g=data.data[i+1], b=data.data[i+2];
+          let v = 0.299*r + 0.587*g + 0.114*b;
+          v = v > 170 ? 255 : (v < 95 ? 0 : v * 1.15);
+          data.data[i]=data.data[i+1]=data.data[i+2]=v;
+        }
+        ctx.putImageData(data,0,0);
+        resolve(c.toDataURL('image/png'));
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function applyOcrText(target, text, silent=false){
+    const parsed = parseOcr(text || '');
+    if(target === 'tracking'){
+      let added = 0;
+      parsed.trackings.forEach(code => {
+        if(!trackingExistsInForm(code)) { addTrackingRow(code, 'Pendiente'); added++; }
+      });
+      if(!added && parsed.bestGeneralCode && !trackingExistsInForm(parsed.bestGeneralCode)){ addTrackingRow(parsed.bestGeneralCode, 'Pendiente'); added++; }
+      if(!silent) toast(added ? `Se agregaron ${added} tracking(s).` : 'No detecté tracking nuevo; revisa el texto OCR.', added ? 'ok':'warn');
+    }
+    if(target === 'order'){
+      if(parsed.orderNumber){ $('orderNumber').value = parsed.orderNumber; markDirty(); if(!silent) toast('Número de pedido aplicado.', 'ok'); }
+      else if(!silent) toast('No detecté número de pedido claro.', 'warn');
+    }
+    if(target === 'product'){
+      const product = parsed.productName || guessProductName(text);
+      const qty = parsed.quantity || 1;
+      const rows = $$('#productRows .item-row');
+      const empty = rows.find(r => !r.querySelector('.prod-name').value.trim());
+      if(empty){ empty.querySelector('.prod-name').value = product; empty.querySelector('.prod-qty').value = qty; }
+      else addProductRow(product, qty);
+      markDirty();
+      if(!silent) toast('Producto/cantidad aplicado.', 'ok');
+    }
+    if(parsed.orderNumber && !$('orderNumber').value.trim()){ $('orderNumber').value = parsed.orderNumber; markDirty(); }
+    renderAll();
+  }
+
+  function trackingExistsInForm(code){
+    code = cleanTracking(code);
+    return $$('#trackingRows .track-code').some(i => cleanTracking(i.value) === code);
+  }
+
+  function cleanTracking(s=''){
+    return String(s).trim().replace(/[\s_]+/g,'').replace(/[.,;:]+$/,'').toUpperCase();
+  }
+
+  function parseOcr(text){
+    const raw = String(text || '').replace(/[|]/g,'I');
+    const normalized = raw.replace(/\r/g,'\n');
+    const compact = normalized.replace(/\s+/g,' ');
+    const candidates = new Set();
+
+    const patterns = [
+      /\b1Z[0-9A-Z]{16}\b/gi,
+      /\bTBA[0-9A-Z]{8,}\b/gi,
+      /\b420\d{20,34}\b/g,
+      /\b9[2345]\d{18,32}\b/g,
+      /\bJD\d{12,24}\b/gi,
+      /\bYT[0-9A-Z]{10,24}\b/gi,
+      /\bLP[0-9A-Z]{8,24}\b/gi,
+      /\b[A-Z]{2}\d{9}[A-Z]{2}\b/gi,
+      /\b\d{12,22}\b/g,
+      /\b[A-Z0-9]{10,28}\b/gi
+    ];
+    patterns.forEach(rx => { let m; while((m=rx.exec(compact))) candidates.add(cleanTracking(m[0])); });
+
+    const badWords = new Set(['AMAZON','ALIEXPRESS','SHEIN','PAYPAL','GOOGLEPAY','APPLEPAY','TRACKING','ORDER','PEDIDO','CANTIDAD','QUANTITY','UNIDADES','DELIVERY','SHIPPED','PACKAGE','TOTAL','SUBTOTAL']);
+    const trackings = [...candidates].filter(c => c.length >= 10 && !badWords.has(c) && !/^\d{4}$/.test(c)).slice(0,20);
+
+    const orderRegexes = [
+      /(?:order|pedido|orden|n[úu]mero de pedido|no\. ?pedido|order number|order #)\s*[:#\-]?\s*([A-Z0-9\-]{6,32})/i,
+      /\b(\d{3}-\d{7}-\d{7})\b/,
+      /\b([A-Z]{2,6}\d{6,20})\b/i
+    ];
+    let orderNumber = '';
+    for(const rx of orderRegexes){ const m = compact.match(rx); if(m){ orderNumber = m[1].trim(); break; } }
+
+    const qtyRegexes = [
+      /(?:qty|quantity|cantidad|cant\.?|unidades|units)\s*[:x×*\-]?\s*(\d{1,4})/i,
+      /(?:x|×|\*)\s*(\d{1,4})\b/i,
+      /\b(\d{1,4})\s*(?:unidades|units|pcs|piezas)\b/i
+    ];
+    let quantity = 1;
+    for(const rx of qtyRegexes){ const m = compact.match(rx); if(m){ quantity = Math.max(1, parseInt(m[1],10)); break; } }
+
+    const productName = guessProductName(normalized);
+    const bestGeneralCode = trackings[0] || '';
+    return { trackings, orderNumber, quantity, productName, bestGeneralCode };
+  }
+
+  function guessProductName(text){
+    const lines = String(text||'').split('\n').map(l => l.trim()).filter(Boolean);
+    const banned = /(order|pedido|tracking|seguimiento|delivered|shipped|total|subtotal|payment|paypal|visa|mastercard|quantity|cantidad|unidades|fecha|date|amazon|temu|shein|aliexpress|ebay)/i;
+    const viable = lines
+      .map(l => l.replace(/\s+/g,' ').replace(/^[*x×\-•\d\s]+/,'').trim())
+      .filter(l => l.length >= 8 && l.length <= 90 && !banned.test(l) && !/^[$L]?\s*\d+[\d.,]*$/.test(l));
+    return viable[0] || '';
+  }
+
+  function buildSummary(o){
+    const products = (o.products||[]).map(p => `- ${p.qty || 1} x ${p.name || 'Producto sin nombre'}`).join('\n');
+    const tracks = (o.trackings||[]).map((t,i)=>`${i+1}. ${t.code} (${t.status || 'Pendiente'})`).join('\n') || 'Sin tracking aún';
+    return `Compra / Seguimiento\n\nSitio: ${o.site}\nFecha compra: ${o.purchaseDate || ''}\nPago: ${o.payment}\nPedido: ${o.orderNumber || 'Sin número'}\nEstado: ${o.status || ''}\n\nProductos:\n${products || '- Sin producto'}\n\nTrackings:\n${tracks}${o.notes ? `\n\nNotas: ${o.notes}` : ''}`;
+  }
+
+  async function copyText(text){
+    await navigator.clipboard.writeText(text);
+    toast('Copiado al portapapeles.', 'ok');
+  }
+
+  function copyCurrentSummary(){ copyText(buildSummary(getFormOrder())).catch(()=>toast('No se pudo copiar.', 'err')); }
+  function copyOrderSummary(id){ const o = state.orders.find(x=>x.id===id); if(o) copyText(buildSummary(o)).catch(()=>toast('No se pudo copiar.', 'err')); }
+
+  function exportJson(){
+    saveLocal('export');
+    const blob = new Blob([JSON.stringify(state,null,2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'trackings-compras-' + today() + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function importJson(e){
+    const file = e.target.files?.[0]; if(!file) return;
+    try{
+      const data = JSON.parse(await file.text());
+      const incoming = Array.isArray(data.orders) ? data.orders : [];
+      mergeOrders(incoming);
+      saveLocal('import');
+      renderAll();
+      toast(`Importado y fusionado: ${incoming.length} compras.`, 'ok');
+    }catch(err){ toast('JSON inválido: ' + err.message, 'err'); }
+    e.target.value = '';
+  }
+
+  function ghConfig(){
+    const gh = state.settings.github;
+    const token = $('ghToken').value.trim() || (getTrusted() ? localStorage.getItem(TOKEN_KEY) : '') || '';
+    if(!gh.owner || !gh.repo || !gh.path) throw new Error('Configura GitHub owner, repo y path.');
+    if(!token) throw new Error('Falta token GitHub.');
+    return { ...gh, token };
+  }
+
+  async function githubRequest(url, opts={}){
+    const { token } = ghConfig();
+    const res = await fetch(url, {
+      ...opts,
+      headers: { 'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + token, 'X-GitHub-Api-Version':'2022-11-28', ...(opts.headers||{}) }
+    });
+    const txt = await res.text();
+    let json = null; try{ json = txt ? JSON.parse(txt) : null; }catch{}
+    if(!res.ok){ throw new Error((json && (json.message || json.error)) || txt || ('HTTP ' + res.status)); }
+    return json;
+  }
+
+  function utf8ToBase64(str){ return btoa(unescape(encodeURIComponent(str))); }
+  function base64ToUtf8(str){ return decodeURIComponent(escape(atob(str.replace(/\n/g,'')))); }
+
+  async function loadCloud(){
+    try{
+      saveSettingsSilent();
+      const gh = ghConfig();
+      $('loadCloudBtn').disabled = true;
+      const api = `https://api.github.com/repos/${encodeURIComponent(gh.owner)}/${encodeURIComponent(gh.repo)}/contents/${encodeURIComponent(gh.path).replace(/%2F/g,'/')}?ref=${encodeURIComponent(gh.branch||'main')}`;
+      const file = await githubRequest(api);
+      localStorage.setItem(CLOUD_SHA_KEY, file.sha || '');
+      const data = JSON.parse(base64ToUtf8(file.content || ''));
+      const incoming = Array.isArray(data.orders) ? data.orders : [];
+      const before = state.orders.length;
+      mergeOrders(incoming);
+      saveLocal('cloud-load');
+      renderAll();
+      toast(`Nube cargada y fusionada. Local: ${before} → ${state.orders.length}.`, 'ok');
+    }catch(err){
+      console.error(err); toast('Error cargando nube: ' + err.message, 'err');
+    }finally{ $('loadCloudBtn').disabled = false; }
+  }
+
+  async function pushCloud(){
+    try{
+      saveSettingsSilent();
+      saveLocal('before-cloud');
+      const gh = ghConfig();
+      $('pushCloudBtn').disabled = true;
+      let sha = localStorage.getItem(CLOUD_SHA_KEY) || '';
+      const path = encodeURIComponent(gh.path).replace(/%2F/g,'/');
+      const api = `https://api.github.com/repos/${encodeURIComponent(gh.owner)}/${encodeURIComponent(gh.repo)}/contents/${path}`;
+      if(!sha){
+        try{ const existing = await githubRequest(api + `?ref=${encodeURIComponent(gh.branch||'main')}`); sha = existing.sha; }catch(e){ sha = ''; }
+      }
+      const payload = {
+        message: 'Actualizar trackings compras ' + new Date().toLocaleString(),
+        content: utf8ToBase64(JSON.stringify(state,null,2)),
+        branch: gh.branch || 'main'
+      };
+      if(sha) payload.sha = sha;
+      const res = await githubRequest(api, { method:'PUT', body: JSON.stringify(payload) });
+      if(res?.content?.sha) localStorage.setItem(CLOUD_SHA_KEY, res.content.sha);
+      toast('Cambios subidos a GitHub correctamente.', 'ok');
+    }catch(err){
+      console.error(err); toast('Error subiendo nube: ' + err.message, 'err');
+    }finally{ $('pushCloudBtn').disabled = false; }
+  }
+
+  function saveSettingsSilent(){
+    state.settings.github = {
+      owner: $('ghOwner').value.trim() || state.settings.github.owner,
+      repo: $('ghRepo').value.trim() || state.settings.github.repo,
+      branch: $('ghBranch').value.trim() || state.settings.github.branch || 'main',
+      path: $('ghPath').value.trim() || state.settings.github.path || 'data/TRACKINGS_COMPRAS.json'
+    };
+    state.settings.trustedDevice = $('trustedDeviceSettings').checked || $('trustedDeviceLogin').checked || getTrusted();
+    if(state.settings.trustedDevice && $('ghToken').value.trim()) localStorage.setItem(TOKEN_KEY, $('ghToken').value.trim());
+    updateCloudMeta();
+  }
+
+  function mergeOrders(incoming){
+    const map = new Map((state.orders || []).map(o => [o.id, o]));
+    incoming.forEach(o => {
+      if(!o || !o.id) return;
+      const old = map.get(o.id);
+      if(!old || new Date(o.updatedAt || 0) > new Date(old.updatedAt || 0)) map.set(o.id, o);
+      else {
+        // Si el local es más nuevo, conserva local, pero fusiona trackings que no existan.
+        const codes = new Set((old.trackings||[]).map(t=>cleanTracking(t.code)));
+        (o.trackings||[]).forEach(t => { if(t.code && !codes.has(cleanTracking(t.code))) old.trackings.push(t); });
+      }
+    });
+    state.orders = [...map.values()].sort((a,b)=> new Date(b.updatedAt||b.createdAt||0) - new Date(a.updatedAt||a.createdAt||0));
+    markDirty();
+  }
+
+  function logout(){
+    saveLocal('logout');
+    $('app').classList.add('hidden');
+    $('loginScreen').classList.remove('hidden');
+    toast('Sesión cerrada. Los datos locales siguen guardados.', 'ok');
+  }
+
+  initLogin();
+
+  // Si ya es dispositivo de confianza y hay credenciales guardadas, no entra automático por seguridad visual;
+  // deja precargado para que solo presiones validar.
+})();
+</script>
+</body>
+</html>
