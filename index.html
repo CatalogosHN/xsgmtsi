@@ -303,6 +303,7 @@
   const TOKEN_KEY = 'trackings_usa_tool_v2_token';
   const KEYAUTH_KEY = 'trackings_usa_tool_v2_keyauth';
   const CLOUD_SHA_KEY = 'trackings_usa_tool_v2_cloud_sha';
+  const HWID_KEY = 'trackings_usa_tool_v2_hwid';
 
   const $ = (id) => document.getElementById(id);
   const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
@@ -412,10 +413,43 @@
   }
 
   function getBrowserHwid(){
-    const base = [navigator.userAgent, navigator.language, screen.width+'x'+screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
-    let h = 2166136261;
-    for(let i=0;i<base.length;i++){ h ^= base.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return 'web-' + (h >>> 0).toString(16);
+    // KeyAuth exige HWID de 20+ caracteres.
+    // Este HWID queda fijo en el navegador para que no cambie en cada login.
+    const saved = localStorage.getItem(HWID_KEY);
+    if(saved && saved.length >= 20) return saved;
+
+    const base = [
+      navigator.userAgent || 'ua',
+      navigator.language || 'lang',
+      screen.width + 'x' + screen.height,
+      screen.colorDepth || 'depth',
+      Intl.DateTimeFormat().resolvedOptions().timeZone || 'tz',
+      navigator.hardwareConcurrency || 'cpu',
+      navigator.deviceMemory || 'mem'
+    ].join('|');
+
+    let h1 = 2166136261;
+    let h2 = 16777619;
+    for(let i = 0; i < base.length; i++){
+      const c = base.charCodeAt(i);
+      h1 ^= c;
+      h1 = Math.imul(h1, 16777619);
+      h2 ^= (c + i);
+      h2 = Math.imul(h2, 2246822507);
+    }
+
+    const randomPart = (crypto && crypto.getRandomValues)
+      ? Array.from(crypto.getRandomValues(new Uint32Array(3))).map(n => n.toString(16).padStart(8,'0')).join('')
+      : Math.random().toString(36).slice(2).padEnd(24,'0');
+
+    const hwid = ('WEB-' +
+      (h1 >>> 0).toString(16).padStart(8,'0') +
+      (h2 >>> 0).toString(16).padStart(8,'0') +
+      '-' + randomPart
+    ).slice(0,64);
+
+    localStorage.setItem(HWID_KEY, hwid);
+    return hwid;
   }
 
   async function loginKeyAuth(){
