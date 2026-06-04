@@ -292,8 +292,9 @@
     Ya NO se piden en la pantalla de login.
   */
   const KEYAUTH_CONFIG = {
-    appName: 'trackints',      // <-- Application Name de KeyAuth
-    ownerId: 'RZsbvRZczd', // <-- Owner ID de KeyAuth
+    // Estos datos quedan internos en el HTML. No se piden en la pantalla.
+    appName: 'trackints',      // Application Name de KeyAuth
+    ownerId: 'RZsbvRZczd',     // Owner ID de KeyAuth
     version: '1.0'
   };
 
@@ -423,8 +424,8 @@
     const ver = String(KEYAUTH_CONFIG.version || '1.0').trim() || '1.0';
     const key = $('kaKey').value.trim();
     const trust = $('trustedDeviceLogin').checked;
-    if(!name || name === 'trackints') return toast('Falta configurar KEYAUTH_CONFIG.appName dentro del HTML.', 'warn');
-    if(!ownerid || ownerid === 'RZsbvRZczd') return toast('Falta configurar KEYAUTH_CONFIG.ownerId dentro del HTML.', 'warn');
+    if(!name || name.includes('PEGA_AQUI')) return toast('Falta configurar KEYAUTH_CONFIG.appName dentro del HTML.', 'warn');
+    if(!ownerid || ownerid.includes('PEGA_AQUI')) return toast('Falta configurar KEYAUTH_CONFIG.ownerId dentro del HTML.', 'warn');
     if(!key) return toast('Falta pegar la KeyAuth key.', 'warn');
     $('loginBtn').disabled = true;
     $('loginBtn').textContent = 'Validando...';
@@ -465,6 +466,7 @@
     loadSettingsForm();
     bindEvents();
     clearForm(false);
+    restoreDraftIfUseful();
     renderAll();
   }
 
@@ -638,6 +640,7 @@
       state.orders.unshift(order);
     }
     saveLocal('manual');
+    localStorage.removeItem(STORE_KEY + '_draft');
     renderAll();
     clearForm(false);
     toast('Compra guardada. También quedó respaldada localmente.', 'ok');
@@ -661,6 +664,47 @@
       }
     };
     localStorage.setItem(STORE_KEY + '_draft', JSON.stringify(draft));
+  }
+
+  function restoreDraftIfUseful(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY + '_draft');
+      if(!raw) return;
+      const draft = JSON.parse(raw);
+      const f = draft && draft.form;
+      if(!f) return;
+
+      const hasUsefulData =
+        String(f.orderNumber || '').trim() ||
+        String(f.notes || '').trim() ||
+        String(f.customSite || '').trim() ||
+        String(f.customPayment || '').trim() ||
+        (Array.isArray(f.products) && f.products.some(p => String(p.name || '').trim())) ||
+        (Array.isArray(f.trackings) && f.trackings.some(t => String(t.code || '').trim()));
+
+      if(!hasUsefulData) return;
+
+      if(f.site){ $('siteSelect').value = f.site; }
+      $('customSite').value = f.customSite || '';
+      $('customSiteBox').classList.toggle('hidden', $('siteSelect').value !== 'Personalizado');
+      if(f.payment){ $('paymentSelect').value = f.payment; }
+      $('customPayment').value = f.customPayment || '';
+      $('customPaymentBox').classList.toggle('hidden', $('paymentSelect').value !== 'Personalizado');
+      $('purchaseDate').value = f.purchaseDate || today();
+      $('orderStatus').value = f.status || 'Comprado';
+      $('orderNumber').value = f.orderNumber || '';
+      $('orderNotes').value = f.notes || '';
+
+      $('productRows').innerHTML = '';
+      (Array.isArray(f.products) && f.products.length ? f.products : [{name:'',qty:1}]).forEach(p => addProductRow(p.name || '', p.qty || 1));
+
+      $('trackingRows').innerHTML = '';
+      (Array.isArray(f.trackings) && f.trackings.length ? f.trackings : [{code:'',status:'Pendiente'}]).forEach(t => addTrackingRow(t.code || '', t.status || 'Pendiente'));
+
+      toast('Se restauró el formulario que estaba en proceso.', 'ok');
+    }catch(err){
+      console.warn('No se pudo restaurar borrador:', err);
+    }
   }
 
   function renderAll(){ renderStats(); renderOrders(); }
